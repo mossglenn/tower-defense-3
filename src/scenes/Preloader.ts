@@ -6,13 +6,13 @@ export default class Preloader extends Phaser.Scene {
   }
 
   preload() {
-    this.load.setBaseURL('https://labs.phaser.io');
-
-    this.load.image('sky', 'assets/skies/space3.png');
-    this.load.image('logo', 'assets/sprites/phaser3-logo.png');
-    this.load.image('red', 'assets/particles/red.png');
+    this.load.image('bullet', '/assets/bullet.png');
+    this.load.image('ghost', '/assets/ghost64.png');
+    this.load.image('enemy', '/assets/enemy64.png');
+    this.load.image('tower', '/assets/tower64.png');
   }
-    create(): void {
-    this.scene.start('helloworld');
+
+  create(): void {
+    this.scene.start('level001');
   }
 }

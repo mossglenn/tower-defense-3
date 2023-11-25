@@ -1,12 +1,6 @@
 /* eslint-env node */
 module.exports = {
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended-type-checked',
-    'plugin:import/typescript',
-    'airbnb-base',
-    'prettier'
-  ],
+  extends: ['plugin:import/typescript', 'airbnb-base', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: ['tsconfig.json'],
@@ -24,5 +18,5 @@ module.exports = {
       },
     },
   },
-  rules: { 'import/no-unresolved': 'error' },
+  rules: { 'import/no-unresolved': 'error', 'no-console': 'off' },
 };

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 import PreloadScene from './scenes/Preloader.ts';
-import HelloWorld from './scenes/HelloWorldScene.ts';
+import Level001 from './scenes/Level001.ts';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -16,7 +16,8 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: true,
     },
   },
-  scene: [PreloadScene, HelloWorld],
+
+  scene: [PreloadScene, Level001],
 };
 
 export default new Phaser.Game(config);
