@@ -1,39 +1,76 @@
 import Phaser from 'phaser';
-import EnemyGroup from '../objects/EnemyGroup.ts';
+import {
+  EnemyGroups,
+  PathsData,
+  SpawningTimelineData,
+} from '../objects/CustomTypes.ts';
+import PathManager from '../objects/PathManager.ts';
+import SpawnManager from '../objects/SpawnManager.ts';
 
 export default class LevelScene extends Phaser.Scene {
+  pathsData!: PathsData;
+
+  spawningTimelineData!: SpawningTimelineData;
+
+  towerMap!: number[][];
+
+  pathManager = new PathManager();
+
+  spawnManager = new SpawnManager();
+
+  graphics?: Phaser.GameObjects.Graphics;
+
+  enemies: EnemyGroups = {};
+
+  updatedtime?: Phaser.GameObjects.Text;
+
   debugSettings = {
     draw: {
       grid: true,
-      path: true,
+      paths: true,
     },
   };
 
-  pathPoints: { x: number; y: number }[] = [];
-
-  path: Phaser.Curves.Path;
-
-  enemies: EnemyGroup = {};
-
-  // map[row][col]
-  towerMap: number[][] = [];
-
-  constructor(key: string) {
-    super(key);
-    this.path = this.createPath();
+  constructor(sceneKey: string = 'levelscene') {
+    super(sceneKey);
   }
 
   create() {
-    this.addGraphics();
+    this.updatedtime = this.add.text(64, 125, 'updated time');
+    this.graphics = this.add.graphics();
+
+    this.pathManager.addData(this.pathsData);
+    this.addGraphics(this.graphics);
+
+    Object.keys(this.enemies).forEach((enemy) =>
+      this.add.existing(this.enemies[enemy])
+    );
+
+    this.spawnManager.createTimeline(this, this.spawningTimelineData);
+    if (this.spawnManager.spawningTimeline !== undefined) {
+      this.spawnManager.spawningTimeline.play();
+    }
   }
 
-  addGraphics() {
-    const graphics = this.add.graphics();
+  update(time: number, _delta: number): void {
+    if (this.updatedtime) {
+      this.updatedtime.setText(Math.floor(time).toString());
+    }
+    const enemykeys = Object.keys(this.enemies);
+    enemykeys.forEach((enemy) => console.log(this.enemies[enemy].children));
+    console.log(
+      `completed events = ${this.spawnManager.spawningTimeline?.totalComplete}`
+    );
+  }
+
+  addGraphics(graphics: Phaser.GameObjects.Graphics) {
     if (this.debugSettings.draw.grid === true) {
       LevelScene.drawGrid(graphics);
     }
-    if (this.debugSettings.draw.path === true) {
-      this.path.draw(graphics);
+    if (this.debugSettings.draw.paths === true) {
+      this.pathManager.pathNames.forEach((pathName) => {
+        this.pathManager!.paths![pathName].draw(graphics);
+      });
     }
   }
 
@@ -48,21 +85,5 @@ export default class LevelScene extends Phaser.Scene {
       graphics.lineTo(j * 64, 576);
     }
     graphics.strokePath();
-  }
-
-  createPath(): Phaser.Curves.Path {
-    const pathStart = this.pathPoints.shift();
-    if (pathStart !== undefined) {
-      const startingX = pathStart.x === 0 ? -32 : pathStart!.x;
-      const startingY = pathStart.y === 0 ? -32 : pathStart!.y;
-      const newPath = new Phaser.Curves.Path(startingX, startingY);
-      this.pathPoints.forEach((value) => {
-        newPath.lineTo(value.x, value.y);
-      });
-      console.log('Returning new path');
-      return newPath;
-    }
-    console.log('Error creating new path');
-    return new Phaser.Curves.Path();
   }
 }

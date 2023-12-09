@@ -18,5 +18,9 @@ module.exports = {
       },
     },
   },
-  rules: { 'import/no-unresolved': 'error', 'no-console': 'off' },
+  rules: {
+    'import/no-unresolved': 'error',
+    'no-console': 'off',
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+  },
 };
