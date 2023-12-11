@@ -61,6 +61,19 @@ export default class LevelScene extends Phaser.Scene {
     console.log(
       `completed events = ${this.spawnManager.spawningTimeline?.totalComplete}`
     );
+
+    if (this.spawnManager.spawningTimeline?.complete) {
+      const numberActive = Object.keys(this.enemies).map((enemy) =>
+        this.enemies[enemy].countActive()
+      );
+      const totalActive = numberActive.reduce(
+        (partialSum, a) => partialSum + a,
+        0
+      );
+      if (totalActive === 0) {
+        this.scene.pause();
+      }
+    }
   }
 
   addGraphics(graphics: Phaser.GameObjects.Graphics) {

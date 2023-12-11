@@ -10,6 +10,8 @@ export default class Preloader extends Phaser.Scene {
     this.load.image('ghost', '/assets/ghost64.png');
     this.load.image('enemy', '/assets/enemy64.png');
     this.load.image('tower', '/assets/tower64.png');
+    this.load.image('scorpion', '/assets/scorpion.png');
+    this.load.image('eye', '/assets/eye.png');
   }
 
   create(): void {

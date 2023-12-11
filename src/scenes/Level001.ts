@@ -5,7 +5,7 @@ import {
   Enemies,
 } from '../objects/CustomTypes.ts';
 import EnemyGroup from '../objects/EnemyGroup.ts';
-import Ghost from '../objects/Ghost.ts';
+import { Eye, Ghost, Scorpion } from '../objects/EnemyRanks.ts';
 
 export default class Level001 extends LevelScene {
   pathsData: PathsData = [
@@ -38,13 +38,16 @@ export default class Level001 extends LevelScene {
       at: 1000,
       enemy: Enemies.GHOST,
       path: 'top',
-      event: 'SPAWN_GHOST',
     },
     {
       at: 2000,
-      enemy: Enemies.GHOST,
+      enemy: Enemies.SCORPION,
       path: 'bottom',
-      event: 'SPAWN_GHOST',
+    },
+    {
+      at: 5000,
+      enemy: Enemies.EYE,
+      path: 'top',
     },
   ];
 
@@ -60,6 +63,16 @@ export default class Level001 extends LevelScene {
       classType: Ghost,
       name: Enemies.GHOST,
       defaultKey: Enemies.GHOST,
+    });
+    this.enemies.scorpion = new EnemyGroup(this.physics.world, this, {
+      classType: Scorpion,
+      name: Enemies.SCORPION,
+      defaultKey: Enemies.SCORPION,
+    });
+    this.enemies.eye = new EnemyGroup(this.physics.world, this, {
+      classType: Eye,
+      name: Enemies.EYE,
+      defaultKey: Enemies.EYE,
     });
     super.create();
   }

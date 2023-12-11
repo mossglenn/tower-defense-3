@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { Enemies } from './CustomTypes.ts';
 
 export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   startingHp: number = 100;
@@ -15,7 +16,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   pathVector: Phaser.Math.Vector2;
 
-  constructor(scene: Phaser.Scene, texture: string = 'enemy') {
+  constructor(scene: Phaser.Scene, texture: string = Enemies.ENEMY) {
     super(scene, -100, -100, texture);
     this.hp = this.startingHp;
     this.key = texture;
