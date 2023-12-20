@@ -1,13 +1,15 @@
 import Phaser from 'phaser';
 import type EnemyGroup from './EnemyGroup.ts';
 
-export type NamedPaths = {
-  [index: string]: Phaser.Curves.Path;
-};
+// export type NamedPaths = {
+//   [index: string]: Phaser.Curves.Path;
+// };
 
-export type PathPoints = { x: number; y: number }[];
+// export type NamedPaths = Phaser.Curves.Path[] & { name: string };
 
-export type PathInfo = { name: string; points: PathPoints };
+// export type PathPoints = { x: number; y: number }[];
+
+export type PathInfo = { name: string; points: Phaser.Math.Vector2[] };
 
 export type PathsData = PathInfo[];
 

@@ -33,9 +33,10 @@ export default class SpawnManager {
       at: spawnEvent.at,
       run: () => {
         console.log(
-          `spawning ${spawnEvent.enemy} on ${spawnEvent.path} path in ${scene.scene.key} `
+          `at ${spawnEvent.at} spawning ${spawnEvent.enemy} on ${spawnEvent.path} path in ${scene.scene.key} `
         );
-        scene.enemies[spawnEvent.enemy].spawnEnemy(spawnEvent.path);
+        // scene.enemies[spawnEvent.enemy].spawnEnemy(spawnEvent.path);
+        scene.spawn(spawnEvent.enemy, spawnEvent.path);
       },
     };
   }
@@ -48,7 +49,22 @@ export default class SpawnManager {
     const timelineConfig = data.map((spawnEvent) =>
       SpawnManager.convertSpawnEventToTimelineEvent(spawnEvent, this.scene!)
     );
-    console.log(`timeline config %O`, timelineConfig);
+    // console.log(`timeline config %O`, timelineConfig);
     return timelineConfig;
+  }
+
+  static checkDataNames(names: string[], data: SpawningTimelineData) {
+    const errors: string[] = [];
+    data.forEach((obj) => {
+      if (!names.includes(obj.path)) {
+        errors.push(
+          `PATH NAME ERROR: data includes the path name: ${obj.path} that is not included in this level's named paths`
+        );
+      }
+    });
+    if (errors.length > 0) {
+      return errors;
+    }
+    return undefined;
   }
 }

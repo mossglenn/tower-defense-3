@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 
 import PreloadScene from './scenes/Preloader.ts';
 import Level001 from './scenes/Level001.ts';
+import GameSettings from './GameSettings.ts';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'game',
-  width: 768,
-  height: 576,
+  width: GameSettings.game.width,
+  height: GameSettings.game.height,
   backgroundColor: '#4488AA',
   physics: {
     default: 'arcade',

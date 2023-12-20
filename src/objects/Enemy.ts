@@ -24,7 +24,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(_time: number, delta: number): void {
-    console.log(`updating`);
+    // console.log(`updating`);
     if (this.path !== undefined) {
       this.pathCovered =
         this.pathCovered === undefined

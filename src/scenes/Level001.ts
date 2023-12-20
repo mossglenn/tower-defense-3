@@ -1,53 +1,32 @@
+import Phaser from 'phaser';
 import LevelScene from './LevelScene.ts';
-import {
-  PathsData,
-  SpawningTimelineData,
-  Enemies,
-} from '../objects/CustomTypes.ts';
+import { SpawningTimelineData, Enemies } from '../objects/CustomTypes.ts';
 import EnemyGroup from '../objects/EnemyGroup.ts';
 import { Eye, Ghost, Scorpion } from '../objects/EnemyRanks.ts';
+import SpawnManager from '../objects/SpawnManager.ts';
 
 export default class Level001 extends LevelScene {
-  pathsData: PathsData = [
-    {
-      name: 'top',
-      points: [
-        { x: 96, y: 0 },
-        { x: 96, y: 164 },
-        { x: 300, y: 164 },
-        { x: 300, y: 250 },
-        { x: 600, y: 250 },
-        { x: 600, y: 576 },
-      ],
-    },
-    {
-      name: 'bottom',
-      points: [
-        { x: 36, y: 0 },
-        { x: 36, y: 200 },
-        { x: 150, y: 200 },
-        { x: 150, y: 300 },
-        { x: 300, y: 300 },
-        { x: 300, y: 576 },
-      ],
-    },
-  ];
+  tileAssets = {
+    json: 'assets/tiles/overworld-tileset-collision-obstacle-paths.json',
+    png: '/assets/tiles/overworld_tileset_grass.png',
+    tilesetNames: ['overworld_tileset_grass'],
+  };
 
   spawningTimelineData: SpawningTimelineData = [
     {
       at: 1000,
       enemy: Enemies.GHOST,
-      path: 'top',
+      path: 'pathOne',
     },
     {
       at: 2000,
       enemy: Enemies.SCORPION,
-      path: 'bottom',
+      path: 'pathTwo',
     },
     {
       at: 5000,
       enemy: Enemies.EYE,
-      path: 'top',
+      path: 'pathOne',
     },
   ];
 
@@ -74,6 +53,18 @@ export default class Level001 extends LevelScene {
       name: Enemies.EYE,
       defaultKey: Enemies.EYE,
     });
+
+    this.map = this.make.tilemap({ key: 'tilemap' });
+    const tileset = this.map.addTilesetImage(
+      'overworld_tileset_grass',
+      'tiles'
+    );
+    if (tileset !== null) {
+      this.map.createLayer('background', tileset);
+      this.map.createLayer('terrain', tileset);
+      this.map.createLayer('collision', tileset);
+    }
+
     super.create();
   }
 }
