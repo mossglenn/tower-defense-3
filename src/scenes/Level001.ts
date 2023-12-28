@@ -1,15 +1,17 @@
-import Phaser from 'phaser';
 import LevelScene from './LevelScene.ts';
-import { SpawningTimelineData, Enemies } from '../objects/CustomTypes.ts';
-import EnemyGroup from '../objects/EnemyGroup.ts';
-import { Eye, Ghost, Scorpion } from '../objects/EnemyRanks.ts';
-import SpawnManager from '../objects/SpawnManager.ts';
+import {
+  SpawningTimelineData,
+  Enemies,
+  CollisionCategories,
+} from '../objects/CustomTypes.ts';
+import { Popgun, PotatoGun, Shotgun } from '../objects/TowerRanks.ts';
 
 export default class Level001 extends LevelScene {
   tileAssets = {
-    json: 'assets/tiles/overworld-tileset-collision-obstacle-paths.json',
-    png: '/assets/tiles/overworld_tileset_grass.png',
-    tilesetNames: ['overworld_tileset_grass'],
+    json: '/assets/tiles/tower3tiledmap.json',
+    png: '/assets/tiles/towerDefense_tilesheet.png',
+    tilesetNames: ['towerDefense_tilesheet'],
+    pathMarkerSize: 64,
   };
 
   spawningTimelineData: SpawningTimelineData = [
@@ -30,40 +32,32 @@ export default class Level001 extends LevelScene {
     },
   ];
 
-  // map[row][col]
-  towerMap: number[][] = [];
-
   constructor() {
     super('level001');
   }
 
   create(): void {
-    this.enemies.ghost = new EnemyGroup(this.physics.world, this, {
-      classType: Ghost,
-      name: Enemies.GHOST,
-      defaultKey: Enemies.GHOST,
-    });
-    this.enemies.scorpion = new EnemyGroup(this.physics.world, this, {
-      classType: Scorpion,
-      name: Enemies.SCORPION,
-      defaultKey: Enemies.SCORPION,
-    });
-    this.enemies.eye = new EnemyGroup(this.physics.world, this, {
-      classType: Eye,
-      name: Enemies.EYE,
-      defaultKey: Enemies.EYE,
-    });
-
     this.map = this.make.tilemap({ key: 'tilemap' });
-    const tileset = this.map.addTilesetImage(
-      'overworld_tileset_grass',
-      'tiles'
-    );
+    const tileset = this.map.addTilesetImage('towerDefense_tilesheet', 'tiles');
     if (tileset !== null) {
-      this.map.createLayer('background', tileset);
-      this.map.createLayer('terrain', tileset);
-      this.map.createLayer('collision', tileset);
+      this.gameMapLayers.background = this.map
+        .createLayer('background', tileset)
+        ?.setVisible(true);
+      this.gameMapLayers.towers = this.map
+        .createLayer('towers', tileset)
+        ?.setDepth(88);
+      this.gameMapLayers.sidebar = this.map
+        .createLayer('sidebar', tileset)
+        ?.setDepth(77);
+      this.gameMapLayers.terrain = this.map
+        .createLayer('terrain', tileset)
+        ?.setCollisionCategory(CollisionCategories.TERRAIN);
     }
+    this.towerManager.towers.push(new PotatoGun(this));
+    this.towerManager.towers.push(new Shotgun(this));
+    this.towerManager.towers.push(new Popgun(this));
+
+    // this.physics.add.existing(testTower);
 
     super.create();
   }

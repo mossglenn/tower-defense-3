@@ -1,11 +1,13 @@
-import Phaser from 'phaser';
+import Phaser, { Scale } from 'phaser';
 
-import PreloadScene from './scenes/Preloader.ts';
 import Level001 from './scenes/Level001.ts';
 import GameSettings from './GameSettings.ts';
+import Sidebar from './scenes/Sidebar.ts';
+import Preloader from './scenes/Preloader.ts';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
+  scale: { mode: Scale.FIT, autoCenter: Scale.CENTER_BOTH },
   parent: 'game',
   width: GameSettings.game.width,
   height: GameSettings.game.height,
@@ -18,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
     },
   },
 
-  scene: [PreloadScene, Level001],
+  scene: [Preloader, Sidebar, Level001],
 };
 
 export default new Phaser.Game(config);

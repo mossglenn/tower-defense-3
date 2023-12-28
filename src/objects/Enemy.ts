@@ -4,7 +4,7 @@ import { Enemies } from './CustomTypes.ts';
 export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   startingHp: number = 100;
 
-  speed: number = 1 / 10000;
+  speed: number = 1;
 
   key: string;
 
@@ -29,7 +29,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.pathCovered =
         this.pathCovered === undefined
           ? 0
-          : this.pathCovered! + this.speed * delta;
+          : this.pathCovered! + (this.speed / 100000) * delta;
       if (this.pathCovered >= 1) {
         this.setActive(false);
         this.setVisible(false);

@@ -1,14 +1,6 @@
 import Phaser from 'phaser';
 import type EnemyGroup from './EnemyGroup.ts';
 
-// export type NamedPaths = {
-//   [index: string]: Phaser.Curves.Path;
-// };
-
-// export type NamedPaths = Phaser.Curves.Path[] & { name: string };
-
-// export type PathPoints = { x: number; y: number }[];
-
 export type PathInfo = { name: string; points: Phaser.Math.Vector2[] };
 
 export type PathsData = PathInfo[];
@@ -36,3 +28,33 @@ export type SpawningTimelineData = {
   enemy: EnemyTypes;
   path: string;
 }[];
+
+export const Targeting = {
+  FIRST: 'first',
+  LAST: 'last',
+  CLOSEST: 'closest',
+  TARGET: 'target',
+} as const;
+
+export const CollisionCategories = {
+  TERRAIN: 1,
+  OBSTACLES: 2,
+  TOWERS: 3,
+};
+
+export type GameMapLayers = {
+  background: Phaser.Tilemaps.TilemapLayer | null | undefined;
+  terrain: Phaser.Tilemaps.TilemapLayer | null | undefined;
+  towers: Phaser.Tilemaps.TilemapLayer | null | undefined;
+  sidebar: Phaser.Tilemaps.TilemapLayer | null | undefined;
+  obstacles: Phaser.Tilemaps.TilemapLayer | null | undefined;
+};
+
+export type TowerConfig = {
+  scene: Phaser.Scene;
+  turrretTexture?: string;
+  baseTexture?: string;
+  x?: number;
+  y?: number;
+  towerScale?: number;
+};

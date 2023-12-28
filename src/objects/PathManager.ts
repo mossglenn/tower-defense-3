@@ -15,9 +15,12 @@ export default class PathManager {
     this.updatePathNames();
   }
 
-  addPathsFromMapLayers(layers: Phaser.Tilemaps.ObjectLayer[]) {
+  addPathsFromMapLayers(
+    pathAdjustment: number,
+    layers: Phaser.Tilemaps.ObjectLayer[]
+  ) {
     const pathsData: PathInfo[] = layers.map(
-      (layer): PathInfo => PathManager.pathInfofromLayer(layer)
+      (layer): PathInfo => PathManager.pathInfofromLayer(pathAdjustment, layer)
     );
     this.addPathsFromData(pathsData);
   }
@@ -87,10 +90,14 @@ export default class PathManager {
     return newPath;
   }
 
-  static pathInfofromLayer(pathLayer: Phaser.Tilemaps.ObjectLayer): PathInfo {
+  static pathInfofromLayer(
+    pathAdjustment: number,
+    pathLayer: Phaser.Tilemaps.ObjectLayer
+  ): PathInfo {
     const { name } = pathLayer;
     const points: Phaser.Math.Vector2[] = pathLayer.objects.map(
-      (obj): Phaser.Math.Vector2 => new Phaser.Math.Vector2(obj.x, obj.y)
+      (obj): Phaser.Math.Vector2 =>
+        new Phaser.Math.Vector2(obj.x + pathAdjustment, obj.y - pathAdjustment)
     );
     points[0] = PathManager.movePointToClosestEdge(
       points[0],
