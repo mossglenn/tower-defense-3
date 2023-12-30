@@ -37,6 +37,7 @@ export const Targeting = {
   TARGET: 'target',
 } as const;
 
+// TODO remove collision categories throughout--don't use them anymore
 export const CollisionCategories = {
   TERRAIN: 1,
   OBSTACLES: 2,

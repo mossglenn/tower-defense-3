@@ -23,6 +23,7 @@ export default class TowerManager {
     this.towerPlacedGroup.runChildUpdate = true;
   }
 
+  // TODO: allow player to scroll sidebar to see more sourceZones (which needs a better sidebar)
   createSourceZones(keys: string[]) {
     if (keys.length < 1) {
       keys.push(...GameSettings.sidebar.sourceZones.map((item) => item.name));
@@ -66,17 +67,6 @@ export default class TowerManager {
   unfreezeSourceTowers() {
     this.towerSourceGroup.getChildren().map((tower) => tower.setInteractive());
   }
-
-  // getTowerClass(className: string) {
-  //   const classesArray = Object.entries(this.towerClasses);
-  //   const classArray = classesArray.find(
-  //     (subarray) => subarray[0] === className
-  //   );
-  //   if (classArray === undefined) {
-  //     return Tower;
-  //   }
-  //   return classArray[1];
-  // }
 
   moveTowerToDroppedGroup(tower: Tower) {
     this.towerSourceGroup.remove(tower);

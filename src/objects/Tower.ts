@@ -24,11 +24,11 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
 
   bullet: string = 'bullet';
 
-  // decorations: string[] = [];
+  // TODO: add decoration with buffs: decorations: string[] = [];
 
   rateOfFire: number = 10;
 
-  targeting: keyof typeof Targeting = 'FIRST';
+  targeting: keyof typeof Targeting = 'FIRST'; // TODO: allow player to choose targeting method
 
   blocked: boolean = false;
 
@@ -89,6 +89,8 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
       .setDepth(StandardDepths.ATTACKAREA)
       .setStrokeStyle(2, 0x333333, 0.3);
     this.setScale(config.towerScale);
+
+    // TODO: move tower input here
 
     this.on('dragleave', () => {
       if (this.notDraggedFromSourceZone) {

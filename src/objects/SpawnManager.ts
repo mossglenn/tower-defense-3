@@ -21,6 +21,7 @@ export default class SpawnManager {
     );
   }
 
+  // TODO: create method for jumping to next spawn (for when the player doesn't want to wait)
   static convertSpawnEventToTimelineEvent(
     spawnEvent: {
       at: number;

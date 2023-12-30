@@ -47,6 +47,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setPosition(this.pathVector!.x, this.pathVector!.y);
   }
 
+  // TODO: create method to call when enemy collides with bullet
   // damage(points: number) {
   //   this.hp -= points;
   //   if (this.hp <= 0) {

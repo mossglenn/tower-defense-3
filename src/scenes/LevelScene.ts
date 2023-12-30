@@ -85,13 +85,14 @@ export default class LevelScene extends Phaser.Scene {
         ?.setVisible(true);
       this.gameMapLayers.sidebar = this.map
         .createLayer('sidebar', tileset)
-        ?.setDepth(StandardDepths.SIDEBAR);
+        ?.setDepth(StandardDepths.SIDEBAR); // TODO: allow scrolling sidebar
       this.gameMapLayers.terrain = this.map
         .createLayer('terrain', tileset)
         ?.setCollisionCategory(CollisionCategories.TERRAIN);
       this.gameMapLayers.obstacles = this.map
         .createLayer('obstacles', tileset)
         ?.setDepth(StandardDepths.OBSTACLES);
+      // TODO: Add collision layer to map
     }
 
     // 🧩 set up paths
@@ -115,7 +116,7 @@ export default class LevelScene extends Phaser.Scene {
         pathNameErrors.forEach((error) => console.error(error));
       }
     } else {
-      console.log('map is undefined');
+      console.log('paths cannot be set up while map is undefined');
     }
 
     if (this.debugSettings.draw.paths) {
@@ -131,6 +132,7 @@ export default class LevelScene extends Phaser.Scene {
     }
 
     // 🧩 Creating all enemy groups
+    // TODO: think about moving creation of enemy group into spawnmanager or into gamesettings
     this.enemies.ghost = new EnemyGroup(this.physics.world, this, {
       classType: Ghost,
       name: Enemies.GHOST,
@@ -153,14 +155,14 @@ export default class LevelScene extends Phaser.Scene {
     // 🧩 prepare spawn timeline
     this.spawnManager.createTimeline(this, this.spawningTimelineData);
     if (this.spawnManager.spawningTimeline !== undefined) {
-      this.spawnManager.spawningTimeline.play();
+      this.spawnManager.spawningTimeline.play(); // TODO: allow player to start spawn timeline
     }
 
     // 🧩 create towers in sidebar
     this.towerManager.createSourceZones(this.levelTowers);
 
-    // 🧩 input and colliders
-
+    // 🧩 input
+    // TODO: thik about moving ALL tower input to tower class
     this.input.on('dragstart', (_pointer: Phaser.Input.Pointer, obj: Tower) => {
       this.towerManager.freezeAllNonDraggingSourceTowers(obj);
       obj.startDrag();
@@ -174,6 +176,8 @@ export default class LevelScene extends Phaser.Scene {
         obj.confirmDrop();
       }
     });
+
+    // TODO: think about moving tower drag input to Tower class
     this.input.on(
       'drag',
       (

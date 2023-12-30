@@ -33,6 +33,8 @@ export default class PathManager {
     return this.paths.find((path) => path.name === name);
   }
 
+  // TODO: add method to update path with changes
+
   private updatePathNames() {
     if (this.paths === undefined) {
       console.log('ERROR trying to update path name of undefined paths');
