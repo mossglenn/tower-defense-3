@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
-import Phaser from 'phaser';
 import Tower from './Tower.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export class PotatoGun extends Tower {
-  constructor(levelscene: Phaser.Scene) {
+  constructor(levelscene: LevelScene) {
     super({
       name: 'PotatoGun',
       scene: levelscene,
@@ -12,12 +12,14 @@ export class PotatoGun extends Tower {
       range: 200,
     });
     levelscene.add.existing(this);
+    this.scene.towerManager.towerSourceGroup.add(this);
+
     this.on('refresh_PotatoGun', () => new PotatoGun(levelscene));
   }
 }
 
 export class Shotgun extends Tower {
-  constructor(levelscene: Phaser.Scene) {
+  constructor(levelscene: LevelScene) {
     super({
       name: 'Shotgun',
       scene: levelscene,
@@ -27,12 +29,14 @@ export class Shotgun extends Tower {
       turrretTexture: 'singleBarrelTurret',
     });
     levelscene.add.existing(this);
+    this.scene.towerManager.towerSourceGroup.add(this);
+
     this.on('refresh_Shotgun', () => new Shotgun(levelscene));
   }
 }
 
 export class Popgun extends Tower {
-  constructor(levelscene: Phaser.Scene) {
+  constructor(levelscene: LevelScene) {
     super({
       name: 'Popgun',
       scene: levelscene,
@@ -41,6 +45,8 @@ export class Popgun extends Tower {
       baseTexture: 'mediumBase',
     });
     levelscene.add.existing(this);
+    this.scene.towerManager.towerSourceGroup.add(this);
+
     this.on('refresh_Popgun', () => new Popgun(levelscene));
   }
 }

@@ -2,9 +2,10 @@ import Phaser from 'phaser';
 import * as TowerClasses from './TowerRanks.ts';
 import GameSettings from '../GameSettings.ts';
 import Tower from './Tower.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export default class TowerManager {
-  scene: Phaser.Scene;
+  scene: LevelScene;
 
   towerClasses = TowerClasses;
 
@@ -14,7 +15,7 @@ export default class TowerManager {
 
   sourceZones: Phaser.GameObjects.Zone[] = [];
 
-  constructor(world: Phaser.Physics.Arcade.World, scene: Phaser.Scene) {
+  constructor(world: Phaser.Physics.Arcade.World, scene: LevelScene) {
     this.scene = scene;
     this.towerSourceGroup = new Phaser.Physics.Arcade.Group(world, scene);
     this.towerSourceGroup.runChildUpdate = true;
@@ -30,7 +31,6 @@ export default class TowerManager {
   }
 
   createSourceZone(key: string = 'potatogun') {
-    // TODO: THIS IS WHERE YOU STOPPED
     const settings = GameSettings.sidebar.sourceZones.find(
       (obj) => obj.name === key
     );
@@ -47,20 +47,39 @@ export default class TowerManager {
       this.scene.add.existing(sourceZone);
       this.sourceZones.push(sourceZone);
       const FunctionHolder = settings.class;
+
       this.scene.add.existing(new FunctionHolder(this.scene));
     } else {
       console.log('unable to find appropriate game settings for source zone');
     }
   }
 
-  getTowerClass(className: string) {
-    const classesArray = Object.entries(this.towerClasses);
-    const classArray = classesArray.find(
-      (subarray) => subarray[0] === className
-    );
-    if (classArray === undefined) {
-      return Tower;
-    }
-    return classArray[1];
+  freezeAllNonDraggingSourceTowers(draggingTower: Tower) {
+    const frozenTowers = this.towerSourceGroup
+      .getChildren()
+      .filter((tower) => tower !== draggingTower);
+
+    frozenTowers.map((tower) => tower.disableInteractive());
+    console.log(frozenTowers);
+  }
+
+  unfreezeSourceTowers() {
+    this.towerSourceGroup.getChildren().map((tower) => tower.setInteractive());
+  }
+
+  // getTowerClass(className: string) {
+  //   const classesArray = Object.entries(this.towerClasses);
+  //   const classArray = classesArray.find(
+  //     (subarray) => subarray[0] === className
+  //   );
+  //   if (classArray === undefined) {
+  //     return Tower;
+  //   }
+  //   return classArray[1];
+  // }
+
+  moveTowerToDroppedGroup(tower: Tower) {
+    this.towerSourceGroup.remove(tower);
+    this.towerPlacedGroup.add(tower);
   }
 }

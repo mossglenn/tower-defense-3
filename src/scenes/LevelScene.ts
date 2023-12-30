@@ -6,10 +6,11 @@ import {
   EnemyTypes,
   GameMapLayers,
   SpawningTimelineData,
+  StandardDepths,
 } from '../objects/CustomTypes.ts';
 import EnemyGroup from '../objects/EnemyGroup.ts';
 import { Eye, Ghost, Scorpion } from '../objects/EnemyRanks.ts';
-import Tower from '../objects/Tower.ts';
+import type Tower from '../objects/Tower.ts';
 import PathManager from '../objects/PathManager.ts';
 import SpawnManager from '../objects/SpawnManager.ts';
 import GameSettings from '../GameSettings.ts';
@@ -84,10 +85,13 @@ export default class LevelScene extends Phaser.Scene {
         ?.setVisible(true);
       this.gameMapLayers.sidebar = this.map
         .createLayer('sidebar', tileset)
-        ?.setDepth(77);
+        ?.setDepth(StandardDepths.SIDEBAR);
       this.gameMapLayers.terrain = this.map
         .createLayer('terrain', tileset)
         ?.setCollisionCategory(CollisionCategories.TERRAIN);
+      this.gameMapLayers.obstacles = this.map
+        .createLayer('obstacles', tileset)
+        ?.setDepth(StandardDepths.OBSTACLES);
     }
 
     // 🧩 set up paths
@@ -154,10 +158,11 @@ export default class LevelScene extends Phaser.Scene {
 
     // 🧩 create towers in sidebar
     this.towerManager.createSourceZones(this.levelTowers);
-    this.towerManager.getTowerClass('Shotgun');
 
     // 🧩 input and colliders
+
     this.input.on('dragstart', (_pointer: Phaser.Input.Pointer, obj: Tower) => {
+      this.towerManager.freezeAllNonDraggingSourceTowers(obj);
       obj.startDrag();
     });
     this.input.on('dragend', (_pointer: Phaser.Input.Pointer, obj: Tower) => {
@@ -165,6 +170,7 @@ export default class LevelScene extends Phaser.Scene {
         obj.setDragAlpha();
       } else {
         obj.disableInteractive();
+        obj.setInteractive();
         obj.confirmDrop();
       }
     });
@@ -216,6 +222,7 @@ export default class LevelScene extends Phaser.Scene {
     const isOverlappingTile = this.physics.world.overlapTiles(tower, [
       ...this.gameMapLayers.terrain!.culledTiles,
       ...this.gameMapLayers.sidebar!.culledTiles,
+      ...this.gameMapLayers.obstacles!.culledTiles, // TODO use hitbox instead of whole tile
     ]);
     const isOverlappingTower = this.physics.world.overlap(
       tower,

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type EnemyGroup from './EnemyGroup.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export type PathInfo = { name: string; points: Phaser.Math.Vector2[] };
 
@@ -40,7 +41,18 @@ export const CollisionCategories = {
   TERRAIN: 1,
   OBSTACLES: 2,
   TOWERS: 3,
-};
+} as const;
+
+export const StandardDepths = {
+  BUTTONS: 99,
+  TURRET: 99,
+  BASE: 98,
+  ATTACKAREA: 97,
+  SIDEBAR: 80,
+  OBSTACLES: 70,
+  TERRAIN: 60,
+  BACKGROUND: 0,
+} as const;
 
 export type GameMapLayers = {
   background: Phaser.Tilemaps.TilemapLayer | null | undefined;
@@ -52,7 +64,7 @@ export type GameMapLayers = {
 
 export type TowerConfig = {
   name: string;
-  scene: Phaser.Scene;
+  scene: LevelScene;
   turrretTexture?: string;
   baseTexture?: string;
   x?: number;

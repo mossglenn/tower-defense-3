@@ -97,7 +97,10 @@ export default class PathManager {
     const { name } = pathLayer;
     const points: Phaser.Math.Vector2[] = pathLayer.objects.map(
       (obj): Phaser.Math.Vector2 =>
-        new Phaser.Math.Vector2(obj.x + pathAdjustment, obj.y - pathAdjustment)
+        new Phaser.Math.Vector2(
+          obj.x ? obj.x + pathAdjustment : pathAdjustment,
+          obj.y ? obj.y - pathAdjustment : 0 - pathAdjustment
+        )
     );
     points[0] = PathManager.movePointToClosestEdge(
       points[0],
