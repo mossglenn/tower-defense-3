@@ -153,9 +153,6 @@ export default class LevelScene extends Phaser.Scene {
     }
 
     // 🧩 create towers in sidebar
-    // this.placePotatoGun();
-    // this.placeShotGun();
-    // this.placePopGun();
     this.towerManager.createSourceZones(this.levelTowers);
     this.towerManager.getTowerClass('Shotgun');
 
@@ -167,9 +164,8 @@ export default class LevelScene extends Phaser.Scene {
       if (obj.blocked) {
         obj.setDragAlpha();
       } else {
-        obj.dropTower();
-        this.towerManager.towerSourceGroup.remove(obj);
-        this.towerManager.towerPlacedGroup.add(obj);
+        obj.disableInteractive();
+        obj.confirmDrop();
       }
     });
     this.input.on(
@@ -191,7 +187,6 @@ export default class LevelScene extends Phaser.Scene {
   }
 
   update(_time: number, _delta: number): void {
-    // check to see if the source group of towers have moved
     if (this.spawnManager.spawningTimeline?.complete) {
       const numberActive = Object.keys(this.enemies).map((enemy) =>
         this.enemies[enemy].countActive()
@@ -212,7 +207,6 @@ export default class LevelScene extends Phaser.Scene {
     if (enemyPath === undefined) {
       console.log('the enemy path is undefined');
     } else {
-      // const spawnedEnemy =
       this.enemies[enemy].spawnEnemy(enemyPath);
       // console.log(spawnedEnemy);
     }
@@ -232,18 +226,6 @@ export default class LevelScene extends Phaser.Scene {
     }
     return false;
   }
-
-  // placePotatoGun() {
-  //   this.towerManager.towerSourceGroup.add(new PotatoGun(this));
-  // }
-
-  // placeShotGun() {
-  //   this.towerManager.towerSourceGroup.add(new Shotgun(this));
-  // }
-
-  // placePopGun() {
-  //   this.towerManager.towerSourceGroup.add(new Popgun(this));
-  // }
 
   static drawGrid(graphics: Phaser.GameObjects.Graphics) {
     graphics.lineStyle(1, 0x0000ff, 0.2);

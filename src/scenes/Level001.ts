@@ -18,12 +18,12 @@ export default class Level001 extends LevelScene {
       path: 'pathOne',
     },
     {
-      at: 2000,
+      at: 5000,
       enemy: Enemies.SCORPION,
       path: 'pathTwo',
     },
     {
-      at: 5000,
+      at: 9000,
       enemy: Enemies.EYE,
       path: 'pathOne',
     },

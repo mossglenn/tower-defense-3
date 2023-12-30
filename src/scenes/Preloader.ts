@@ -13,6 +13,9 @@ export default class Preloader extends Phaser.Scene {
     this.load.image('scorpion', '/assets/sprites/scorpion.png');
     this.load.image('eye', '/assets/sprites/eye.png');
 
+    this.load.image('trashbin', '/assets/sprites/trash-bin.png');
+    this.load.image('correct', '/assets/sprites/correct.png');
+
     this.load.image('smallTurret', '/assets/sprites/tower_turret_small.png');
     this.load.image(
       'singleBarrelTurret',

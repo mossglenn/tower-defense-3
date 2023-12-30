@@ -115,6 +115,38 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     this.attackArea.setVisible(true);
   }
 
+  confirmDrop() {
+    const correctButton = new Phaser.GameObjects.Image(
+      this.scene,
+      this.x + 40,
+      this.y,
+      'correct'
+    );
+    correctButton.setDisplaySize(32, 32).setInteractive();
+    this.scene.add.existing(correctButton);
+
+    const trashButton = new Phaser.GameObjects.Image(
+      this.scene,
+      this.x - 40,
+      this.y,
+      'trashbin'
+    );
+    trashButton.setDisplaySize(32, 32).setInteractive();
+    this.scene.add.existing(trashButton);
+
+    correctButton.on('pointerup', () => {
+      correctButton.destroy();
+      trashButton.destroy();
+      this.dropTower();
+    });
+
+    trashButton.on('pointerup', () => {
+      correctButton.destroy();
+      trashButton.destroy();
+      Tower.destroyTower(this);
+    });
+  }
+
   dropTower() {
     this.setAlpha(1);
     this.base.setAlpha(1);
@@ -129,6 +161,12 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     this.base.y = y;
     this.attackArea.x = x;
     this.attackArea.y = y;
+  }
+
+  static destroyTower(tower: Tower) {
+    tower.base.destroy();
+    tower.attackArea.destroy();
+    tower.destroy();
   }
 
   findTarget() {
