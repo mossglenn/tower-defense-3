@@ -1,10 +1,16 @@
 import Phaser from 'phaser';
-import { Targeting, TowerConfig } from './CustomTypes.ts';
+import { CollisionCategories, Targeting, TowerConfig } from './CustomTypes.ts';
 
 export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
+  name: string;
+
   scene: Phaser.Scene;
 
   base: Phaser.GameObjects.Sprite;
+
+  range: number;
+
+  attackArea: Phaser.GameObjects.Ellipse;
 
   towerScale: number;
 
@@ -18,21 +24,29 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
 
   targeting: keyof typeof Targeting = 'FIRST';
 
+  blocked: boolean = false;
+
+  notDraggedFromSourceZone: boolean = true;
+
   // depth: number = 50;
 
   constructor(towerConfig: TowerConfig) {
     const defaults = {
+      name: 'tower',
       turrretTexture: 'smallTurret',
       baseTexture: 'smallBase',
       x: 32,
       y: 32,
       towerScale: 1,
+      range: 100,
     };
     const config = { ...defaults, ...towerConfig };
     super(config.scene, config.x, config.y, config.turrretTexture);
+    this.name = config.name;
     this.scene = config.scene;
     this.towerScale = config.towerScale;
     this.turretTexture = config.turrretTexture;
+    this.range = config.range;
     this.base = config.scene.add
       .sprite(config.x, config.y, config.baseTexture)
       .setScale(config.towerScale);
@@ -44,9 +58,68 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
         (this.width - this.width * config.towerScale) / 2
       )
       .setDepth(99)
-      .setInteractive({ draggable: true });
+      .setInteractive({ draggable: true })
+      .setCollisionCategory(CollisionCategories.TOWERS)
+      .setCollidesWith([
+        CollisionCategories.TERRAIN,
+        CollisionCategories.OBSTACLES,
+        CollisionCategories.TOWERS,
+      ]);
     this.scene.add.existing(this.base).setDepth(98);
+    this.attackArea = new Phaser.GameObjects.Ellipse(
+      config.scene,
+      config.x,
+      config.y,
+      config.range * 2,
+      config.range * 2,
+      0x000000,
+      0.2
+    );
+    this.scene.add.existing(this.attackArea);
+    this.attackArea.setVisible(false).setStrokeStyle(2, 0x333333, 0.3);
     this.setScale(config.towerScale);
+    this.on('dragleave', () => {
+      if (this.notDraggedFromSourceZone) {
+        this.notDraggedFromSourceZone = false;
+        const eventName = `refresh_${this.name}`;
+        this.emit(eventName);
+        // console.log(
+        //   `${eventName} emitting: ${this.name} is leaving the ${zone.name} zone`
+        // );
+      }
+    });
+  }
+
+  setDragAlpha(a: number = 0.8) {
+    this.setAlpha(a);
+    this.base.setAlpha(a);
+  }
+
+  startDrag() {
+    this.setDragAlpha();
+    this.attackArea.setVisible(false);
+  }
+
+  block() {
+    const tint = 0x666666;
+    this.blocked = true;
+    this.setTint(tint);
+    this.base.setTint(tint);
+    this.attackArea.setVisible(false);
+  }
+
+  unblock() {
+    this.blocked = false;
+    this.clearTint();
+    this.base.clearTint();
+    this.attackArea.setVisible(true);
+  }
+
+  dropTower() {
+    this.setAlpha(1);
+    this.base.setAlpha(1);
+    this.disableInteractive();
+    this.attackArea.setVisible(false);
   }
 
   dragTower(x: number, y: number) {
@@ -54,6 +127,8 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     this.y = y;
     this.base.x = x;
     this.base.y = y;
+    this.attackArea.x = x;
+    this.attackArea.y = y;
   }
 
   findTarget() {

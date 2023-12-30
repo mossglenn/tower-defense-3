@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import {
+  CollisionCategories,
   Enemies,
   EnemyGroups,
   EnemyTypes,
@@ -22,6 +23,8 @@ export default class LevelScene extends Phaser.Scene {
     pathMarkerSize: number;
   };
 
+  levelTowers!: string[];
+
   map?: Phaser.Tilemaps.Tilemap;
 
   gameMapLayers: GameMapLayers = {
@@ -38,13 +41,11 @@ export default class LevelScene extends Phaser.Scene {
 
   enemies: EnemyGroups = {};
 
-  towerManager = new TowerManager();
+  towerManager!: TowerManager;
 
   pathManager = new PathManager();
 
   graphics?: Phaser.GameObjects.Graphics;
-
-  updatedtime?: Phaser.GameObjects.Text;
 
   debugSettings = {
     draw: {
@@ -63,10 +64,30 @@ export default class LevelScene extends Phaser.Scene {
   }
 
   create() {
+    this.towerManager = new TowerManager(this.physics.world, this);
+
     this.graphics = this.add.graphics();
 
     if (this.debugSettings.draw.grid) {
       LevelScene.drawGrid(this.graphics!);
+    }
+
+    // 🧩 set up tilemap
+    this.map = this.make.tilemap({ key: 'tilemap' });
+    const tileset = this.map.addTilesetImage(
+      this.tileAssets.tilesetNames[0],
+      'tiles'
+    );
+    if (tileset !== null) {
+      this.gameMapLayers.background = this.map
+        .createLayer('background', tileset)
+        ?.setVisible(true);
+      this.gameMapLayers.sidebar = this.map
+        .createLayer('sidebar', tileset)
+        ?.setDepth(77);
+      this.gameMapLayers.terrain = this.map
+        .createLayer('terrain', tileset)
+        ?.setCollisionCategory(CollisionCategories.TERRAIN);
     }
 
     // 🧩 set up paths
@@ -89,6 +110,8 @@ export default class LevelScene extends Phaser.Scene {
       if (pathNameErrors !== undefined) {
         pathNameErrors.forEach((error) => console.error(error));
       }
+    } else {
+      console.log('map is undefined');
     }
 
     if (this.debugSettings.draw.paths) {
@@ -129,25 +152,46 @@ export default class LevelScene extends Phaser.Scene {
       this.spawnManager.spawningTimeline.play();
     }
 
+    // 🧩 create towers in sidebar
+    // this.placePotatoGun();
+    // this.placeShotGun();
+    // this.placePopGun();
+    this.towerManager.createSourceZones(this.levelTowers);
+    this.towerManager.getTowerClass('Shotgun');
+
     // 🧩 input and colliders
+    this.input.on('dragstart', (_pointer: Phaser.Input.Pointer, obj: Tower) => {
+      obj.startDrag();
+    });
+    this.input.on('dragend', (_pointer: Phaser.Input.Pointer, obj: Tower) => {
+      if (obj.blocked) {
+        obj.setDragAlpha();
+      } else {
+        obj.dropTower();
+        this.towerManager.towerSourceGroup.remove(obj);
+        this.towerManager.towerPlacedGroup.add(obj);
+      }
+    });
     this.input.on(
       'drag',
       (
         _pointer: Phaser.Input.Pointer,
-        gameObject: Tower,
+        tower: Tower,
         dragX: number,
         dragY: number
       ) => {
-        gameObject.dragTower(dragX, dragY);
+        tower.dragTower(dragX, dragY);
+        if (this.checkIsOverlapping(tower)) {
+          tower.block();
+        } else {
+          tower.unblock();
+        }
       }
     );
   }
 
-  update(time: number, _delta: number): void {
-    if (this.updatedtime) {
-      this.updatedtime.setText(Math.floor(time).toString());
-    }
-
+  update(_time: number, _delta: number): void {
+    // check to see if the source group of towers have moved
     if (this.spawnManager.spawningTimeline?.complete) {
       const numberActive = Object.keys(this.enemies).map((enemy) =>
         this.enemies[enemy].countActive()
@@ -173,6 +217,33 @@ export default class LevelScene extends Phaser.Scene {
       // console.log(spawnedEnemy);
     }
   }
+
+  checkIsOverlapping(tower: Tower) {
+    const isOverlappingTile = this.physics.world.overlapTiles(tower, [
+      ...this.gameMapLayers.terrain!.culledTiles,
+      ...this.gameMapLayers.sidebar!.culledTiles,
+    ]);
+    const isOverlappingTower = this.physics.world.overlap(
+      tower,
+      this.towerManager.towerPlacedGroup
+    );
+    if (isOverlappingTile || isOverlappingTower) {
+      return true;
+    }
+    return false;
+  }
+
+  // placePotatoGun() {
+  //   this.towerManager.towerSourceGroup.add(new PotatoGun(this));
+  // }
+
+  // placeShotGun() {
+  //   this.towerManager.towerSourceGroup.add(new Shotgun(this));
+  // }
+
+  // placePopGun() {
+  //   this.towerManager.towerSourceGroup.add(new Popgun(this));
+  // }
 
   static drawGrid(graphics: Phaser.GameObjects.Graphics) {
     graphics.lineStyle(1, 0x0000ff, 0.2);

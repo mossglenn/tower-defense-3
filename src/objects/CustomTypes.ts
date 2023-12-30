@@ -51,10 +51,12 @@ export type GameMapLayers = {
 };
 
 export type TowerConfig = {
+  name: string;
   scene: Phaser.Scene;
   turrretTexture?: string;
   baseTexture?: string;
   x?: number;
   y?: number;
   towerScale?: number;
+  range?: number;
 };
