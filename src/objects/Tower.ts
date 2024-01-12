@@ -6,6 +6,9 @@ import {
   TowerConfig,
 } from './CustomTypes.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
+import * as Bullets from './BulletRanks.ts';
+import { BulletTypes } from './BulletRanks.ts';
+import Enemy from './Enemy.ts';
 
 export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   name: string;
@@ -22,13 +25,15 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
 
   turretTexture: string;
 
-  bullet: string = 'bullet';
+  bulletClass: BulletTypes;
 
   // TODO: add decoration with buffs: decorations: string[] = [];
 
-  rateOfFire: number = 10;
+  rateOfFire: number;
 
   targeting: keyof typeof Targeting = 'FIRST'; // TODO: allow player to choose targeting method
+
+  firingTimer?: Phaser.Time.TimerEvent;
 
   blocked: boolean = false;
 
@@ -43,10 +48,12 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
       name: 'tower',
       turrretTexture: 'smallTurret',
       baseTexture: 'smallBase',
+      bulletClass: Bullets.BulletClasses.POTATO,
       x: 32,
       y: 32,
       towerScale: 1,
       range: 100,
+      rateOfFire: 1000,
     };
     const config = { ...defaults, ...towerConfig };
     super(config.scene, config.x, config.y, config.turrretTexture);
@@ -55,6 +62,8 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     this.towerScale = config.towerScale;
     this.turretTexture = config.turrretTexture;
     this.range = config.range;
+    this.rateOfFire = config.rateOfFire;
+    this.bulletClass = config.bulletClass;
     this.base = config.scene.add
       .sprite(config.x, config.y, config.baseTexture)
       .setScale(config.towerScale);
@@ -143,6 +152,12 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
 
   dropTower() {
     this.scene.towerManager.moveTowerToDroppedGroup(this);
+    if (this.scene.debugSettings.log) {
+      const success = this.scene.towerManager.towerPlacedGroup.contains(this);
+      console.log(
+        `placing tower: ${this.name} using bullets: ${this.bulletClass.name}. Now in Place Group: ${success}`
+      );
+    }
     this.scene.towerManager.unfreezeSourceTowers();
     this.correctButton?.destroy();
     this.trashButton?.destroy();
@@ -150,6 +165,13 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     this.base.setAlpha(1);
     this.disableInteractive();
     this.attackArea.setVisible(false);
+    this.firingTimer = this.scene.time.addEvent({
+      delay: this.rateOfFire,
+      loop: true,
+      callback: this.fire,
+      callbackScope: this,
+    });
+    console.log(this.firingTimer.delay);
   }
 
   dragTower(x: number, y: number) {
@@ -210,5 +232,43 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   findTarget() {
     const method = this.targeting;
     console.log(`looking for ${method} enemy`);
+    let allEnemies: Enemy[] = [];
+    const keys: string[] = Object.keys(this.scene.enemies);
+    console.log(`keys: ${keys}`);
+    keys.forEach((key: string) => {
+      const keyEnemies = this.scene.enemies[key].getChildren();
+      console.log(keyEnemies);
+      allEnemies = [
+        ...allEnemies,
+        ...(this.scene.enemies[key].getMatching('visible', true) as Enemy[]),
+      ];
+    });
+    const getFirst = (a: Enemy, b: Enemy) =>
+      a.pathCovered! > b.pathCovered! ? a : b;
+    const target: Enemy | undefined =
+      allEnemies.length > 0 ? allEnemies.reduce(getFirst) : undefined;
+    return target;
+  }
+
+  createBullet() {
+    // eslint-disable-next-line new-cap
+    const bullet = new this.bulletClass(this.scene, this.x, this.y);
+    this.scene.physics.add.existing(bullet);
+    return bullet;
+  }
+
+  fire() {
+    // eslint-disable-next-line new-cap
+    console.log(`prepping bullet and target`);
+    const bullet = this.createBullet();
+    const target = this.findTarget();
+    if (bullet !== undefined && target !== undefined) {
+      const angle = this.scene.physics.moveToObject(
+        bullet,
+        target,
+        bullet.speed
+      );
+      bullet.setRotation(angle);
+    }
   }
 }

@@ -18,7 +18,7 @@ export default class TowerManager {
   constructor(world: Phaser.Physics.Arcade.World, scene: LevelScene) {
     this.scene = scene;
     this.towerSourceGroup = new Phaser.Physics.Arcade.Group(world, scene);
-    this.towerSourceGroup.runChildUpdate = true;
+    this.towerSourceGroup.runChildUpdate = false;
     this.towerPlacedGroup = new Phaser.Physics.Arcade.Group(world, scene);
     this.towerPlacedGroup.runChildUpdate = true;
   }
@@ -61,7 +61,7 @@ export default class TowerManager {
       .filter((tower) => tower !== draggingTower);
 
     frozenTowers.map((tower) => tower.disableInteractive());
-    console.log(frozenTowers);
+    // console.log(frozenTowers);
   }
 
   unfreezeSourceTowers() {

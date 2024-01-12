@@ -24,6 +24,9 @@ export default class Preloader extends Phaser.Scene {
 
     this.load.image('smallBase', '/assets/sprites/tower_base_small.png');
     this.load.image('mediumBase', '/assets/sprites/tower_base_medium.png');
+
+    this.load.image('bullet_potato', '/assets/sprites/bullet_potato.png');
+    this.load.image('bullet_pea', '/assets/sprites/bullet_pea.png');
   }
 
   create(): void {

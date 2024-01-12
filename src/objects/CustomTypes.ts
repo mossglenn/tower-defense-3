@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type EnemyGroup from './EnemyGroup.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
+import { BulletTypes } from './BulletRanks.ts';
 
 export type PathInfo = { name: string; points: Phaser.Math.Vector2[] };
 
@@ -71,5 +72,18 @@ export type TowerConfig = {
   x?: number;
   y?: number;
   towerScale?: number;
+  bulletClass: BulletTypes;
   range?: number;
+  rateOfFire?: number;
+  targeting?: keyof typeof Targeting;
+};
+
+export type BulletConfig = {
+  scene: LevelScene;
+  x: number;
+  y: number;
+  texture?: string;
+  mass?: number;
+  speed?: number;
+  spin?: number;
 };

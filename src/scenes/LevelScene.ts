@@ -16,6 +16,10 @@ import SpawnManager from '../objects/SpawnManager.ts';
 import GameSettings from '../GameSettings.ts';
 import TowerManager from '../objects/TowerManager.ts';
 
+// get a list of classes exported
+// import * as BulletTestTypes from '../objects/BulletRanks.ts';
+// console.log(Object.getOwnPropertyDescriptors(BulletTestTypes));
+
 export default class LevelScene extends Phaser.Scene {
   tileAssets!: {
     json: string;
@@ -53,6 +57,7 @@ export default class LevelScene extends Phaser.Scene {
       grid: false,
       paths: false,
     },
+    log: true,
   };
 
   constructor(sceneKey: string = 'levelscene') {
