@@ -20,6 +20,7 @@ export default class TowerManager {
     this.towerSourceGroup = new Phaser.Physics.Arcade.Group(world, scene);
     this.towerSourceGroup.runChildUpdate = false;
     this.towerPlacedGroup = new Phaser.Physics.Arcade.Group(world, scene);
+    this.scene.add.existing(this.towerPlacedGroup);
     this.towerPlacedGroup.runChildUpdate = true;
   }
 

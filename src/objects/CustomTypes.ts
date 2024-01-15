@@ -66,7 +66,7 @@ export type GameMapLayers = {
 
 export type TowerConfig = {
   name: string;
-  scene: LevelScene;
+  levelscene: LevelScene;
   turrretTexture?: string;
   baseTexture?: string;
   x?: number;

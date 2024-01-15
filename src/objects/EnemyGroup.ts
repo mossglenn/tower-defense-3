@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import Enemy from './Enemy.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
+  levelscene: LevelScene;
+
   constructor(
     world: Phaser.Physics.Arcade.World,
-    scene: Phaser.Scene,
+    levelscene: LevelScene,
     config: Phaser.Types.Physics.Arcade.PhysicsGroupConfig = {}
   ) {
     const defaultConfig: Phaser.Types.Physics.Arcade.PhysicsGroupConfig = {
@@ -14,7 +17,8 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       runChildUpdate: true,
       immovable: true,
     };
-    super(world, scene, Object.assign(defaultConfig, config));
+    super(world, levelscene, Object.assign(defaultConfig, config));
+    this.levelscene = levelscene;
   }
 
   spawnEnemy(enemyPath: Phaser.Curves.Path) {
@@ -25,6 +29,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       spawnedEnemy.body!.setSize();
       spawnedEnemy.setActive(true);
       spawnedEnemy.setVisible(true);
+      this.levelscene.visibleEnemies.add(spawnedEnemy);
     }
     return spawnedEnemy;
   }

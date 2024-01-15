@@ -5,7 +5,7 @@ import type LevelScene from '../scenes/LevelScene.ts';
 export default class Bullet extends Phaser.Physics.Arcade.Sprite {
   name: string;
 
-  scene: LevelScene;
+  levelscene: LevelScene;
 
   mass: number;
 
@@ -23,18 +23,17 @@ export default class Bullet extends Phaser.Physics.Arcade.Sprite {
       x: 32,
       y: 32,
       mass: 0,
-      damage: 10,
+      damage: 50,
       speed: 1000,
       spin: 1,
     };
     const config = { ...defaults, ...bulletConfig };
     super(config.scene, config.x, config.y, config.texture);
     this.name = config.name;
-    this.scene = config.scene;
+    this.levelscene = config.scene;
     this.mass = config.mass;
     this.damage = config.damage;
     this.speed = config.speed;
     this.spin = config.spin;
-    this.scene.add.existing(this);
   }
 }

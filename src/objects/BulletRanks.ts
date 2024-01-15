@@ -13,6 +13,7 @@ export class Potato extends Bullet {
       y,
     };
     super(bulletConfig);
+    this.levelscene.add.existing(this);
   }
 }
 
@@ -25,6 +26,7 @@ export class Pea extends Bullet {
       y,
     };
     super(bulletConfig);
+    this.levelscene.add.existing(this);
   }
 }
 export const BulletClasses = {

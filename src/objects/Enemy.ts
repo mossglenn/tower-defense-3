@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
 import { Enemies } from './CustomTypes.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
+  levelscene: LevelScene;
+
   startingHp: number = 100;
 
   speed: number = 1;
@@ -16,15 +19,22 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   pathVector: Phaser.Math.Vector2;
 
-  constructor(scene: Phaser.Scene, texture: string = Enemies.ENEMY) {
+  distanceToTower: number = 1000000;
+
+  constructor(scene: LevelScene, texture: string = Enemies.ENEMY) {
     super(scene, -100, -100, texture);
+    this.levelscene = scene;
     this.hp = this.startingHp;
     this.key = texture;
     this.pathVector = new Phaser.Math.Vector2();
   }
 
   update(_time: number, delta: number): void {
-    // console.log(`updating`);
+    if (this.body?.embedded) {
+      this.setAngle(90);
+    } else {
+      this.setAngle(0);
+    }
     if (this.path !== undefined) {
       this.pathCovered =
         this.pathCovered === undefined
@@ -33,6 +43,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.pathCovered >= 1) {
         this.setActive(false);
         this.setVisible(false);
+        this.levelscene.visibleEnemies.remove(this);
       } else {
         this.path.getPoint(this.pathCovered, this.pathVector);
         this.setPosition(this.pathVector!.x, this.pathVector!.y);
@@ -47,19 +58,13 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setPosition(this.pathVector!.x, this.pathVector!.y);
   }
 
-  // TODO: create method to call when enemy collides with bullet
-  // damage(points: number) {
-  //   this.hp -= points;
-  //   if (this.hp <= 0) {
-  //     this.setActive(false);
-  //     this.setVisible(false);
-  //   }
-  // }
-
-  // heal(points: number) {
-  //   this.hp += points;
-  //   if (this.hp > this.startingHp) {
-  //     this.hp = this.startingHp;
-  //   }
-  // }
+  damage(points: number) {
+    console.log(`hit enemy for ${points} damage`);
+    this.hp -= points;
+    if (this.hp <= 0) {
+      this.levelscene.visibleEnemies.remove(this);
+      this.setActive(false);
+      this.setVisible(false);
+    }
+  }
 }

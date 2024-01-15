@@ -15,10 +15,8 @@ import PathManager from '../objects/PathManager.ts';
 import SpawnManager from '../objects/SpawnManager.ts';
 import GameSettings from '../GameSettings.ts';
 import TowerManager from '../objects/TowerManager.ts';
-
-// get a list of classes exported
-// import * as BulletTestTypes from '../objects/BulletRanks.ts';
-// console.log(Object.getOwnPropertyDescriptors(BulletTestTypes));
+import Bullet from '../objects/Bullet.ts';
+import Enemy from '../objects/Enemy.ts';
 
 export default class LevelScene extends Phaser.Scene {
   tileAssets!: {
@@ -46,11 +44,17 @@ export default class LevelScene extends Phaser.Scene {
 
   enemies: EnemyGroups = {};
 
+  visibleEnemies = new Phaser.GameObjects.Group(this);
+
+  bulletGroup?: Phaser.Physics.Arcade.Group;
+
   towerManager!: TowerManager;
 
   pathManager = new PathManager();
 
   graphics?: Phaser.GameObjects.Graphics;
+
+  playbutton?: Phaser.GameObjects.Image;
 
   debugSettings = {
     draw: {
@@ -59,6 +63,8 @@ export default class LevelScene extends Phaser.Scene {
     },
     log: true,
   };
+
+  // timeScale //TODO: allow player to speedup and slow down timescale
 
   constructor(sceneKey: string = 'levelscene') {
     super(sceneKey);
@@ -157,14 +163,33 @@ export default class LevelScene extends Phaser.Scene {
       this.add.existing(this.enemies[enemy])
     );
 
+    // bullet collider
+    this.bulletGroup = this.physics.add.group();
+
+    this.physics.add.overlap(this.bulletGroup, this.visibleEnemies, (e, b) => {
+      console.log(`hit`);
+      const bullet = b as Bullet;
+      const enemy = e as Enemy;
+      enemy.damage(bullet.damage);
+      bullet.destroy();
+    });
+
     // 🧩 prepare spawn timeline
     this.spawnManager.createTimeline(this, this.spawningTimelineData);
-    if (this.spawnManager.spawningTimeline !== undefined) {
-      this.spawnManager.spawningTimeline.play(); // TODO: allow player to start spawn timeline
-    }
 
     // 🧩 create towers in sidebar
     this.towerManager.createSourceZones(this.levelTowers);
+
+    // 🧩 create play button
+    this.playbutton = this.add
+      .image(GameSettings.game.width / 2, GameSettings.game.height / 2, 'play')
+      .setInteractive({ cursor: 'pointer' })
+      .on('pointerup', () => {
+        if (this.spawnManager.spawningTimeline !== undefined) {
+          this.spawnManager.spawningTimeline.play();
+          this.playbutton?.destroy();
+        }
+      });
 
     // 🧩 input
     // TODO: thik about moving ALL tower input to tower class
@@ -202,6 +227,10 @@ export default class LevelScene extends Phaser.Scene {
   }
 
   update(_time: number, _delta: number): void {
+    // console.log(
+    //   `visibleEnemies length: ${this.visibleEnemies.getChildren().length}`
+    // );
+
     if (this.spawnManager.spawningTimeline?.complete) {
       const numberActive = Object.keys(this.enemies).map((enemy) =>
         this.enemies[enemy].countActive()
@@ -217,13 +246,11 @@ export default class LevelScene extends Phaser.Scene {
   }
 
   spawn(enemy: EnemyTypes, pathName: string) {
-    // console.log(this.pathManager.pathNames);
     const enemyPath = this.pathManager.getPath(pathName);
     if (enemyPath === undefined) {
       console.log('the enemy path is undefined');
     } else {
       this.enemies[enemy].spawnEnemy(enemyPath);
-      // console.log(spawnedEnemy);
     }
   }
 

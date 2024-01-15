@@ -2,18 +2,18 @@ import Phaser from 'phaser';
 import {
   CollisionCategories,
   StandardDepths,
-  Targeting,
   TowerConfig,
 } from './CustomTypes.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
 import * as Bullets from './BulletRanks.ts';
 import { BulletTypes } from './BulletRanks.ts';
 import Enemy from './Enemy.ts';
+import { TargetingMethodType, TargetingMethods } from './TargetingMethod.ts';
 
 export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   name: string;
 
-  scene: LevelScene;
+  levelscene: LevelScene;
 
   base: Phaser.GameObjects.Sprite;
 
@@ -31,9 +31,11 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
 
   rateOfFire: number;
 
-  targeting: keyof typeof Targeting = 'FIRST'; // TODO: allow player to choose targeting method
+  targeting: TargetingMethodType = TargetingMethods.GetFirst; // TODO: allow player to choose targeting method
 
-  firingTimer?: Phaser.Time.TimerEvent;
+  firingTimer: Phaser.Time.TimerEvent;
+
+  firingTimerConfig: Phaser.Types.Time.TimerEventConfig;
 
   blocked: boolean = false;
 
@@ -42,6 +44,11 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   trashButton: Phaser.GameObjects.Image | undefined;
 
   correctButton: Phaser.GameObjects.Image | undefined;
+
+  // TODO: think about adding target information that could be used between shots for rotation and used by shots, too
+  #targetable: Enemy[] = [];
+
+  #target?: Enemy;
 
   constructor(towerConfig: TowerConfig) {
     const defaults = {
@@ -52,22 +59,22 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
       x: 32,
       y: 32,
       towerScale: 1,
-      range: 100,
+      range: 200,
       rateOfFire: 1000,
     };
     const config = { ...defaults, ...towerConfig };
-    super(config.scene, config.x, config.y, config.turrretTexture);
+    super(config.levelscene, config.x, config.y, config.turrretTexture);
     this.name = config.name;
-    this.scene = config.scene;
+    this.levelscene = config.levelscene;
     this.towerScale = config.towerScale;
     this.turretTexture = config.turrretTexture;
     this.range = config.range;
     this.rateOfFire = config.rateOfFire;
     this.bulletClass = config.bulletClass;
-    this.base = config.scene.add
+    this.base = config.levelscene.add
       .sprite(config.x, config.y, config.baseTexture)
       .setScale(config.towerScale);
-    this.scene.physics.add
+    this.levelscene.physics.add
       .existing(this)
       .setCircle(
         (this.width / 2) * config.towerScale,
@@ -82,9 +89,10 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
         CollisionCategories.OBSTACLES,
         CollisionCategories.TOWERS,
       ]);
-    this.scene.add.existing(this.base).setDepth(StandardDepths.BASE);
+    this.levelscene.add.existing(this.base).setDepth(StandardDepths.BASE);
+
     this.attackArea = new Phaser.GameObjects.Ellipse(
-      config.scene,
+      config.levelscene,
       config.x,
       config.y,
       config.range * 2,
@@ -92,11 +100,25 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
       0x000000,
       0.2
     );
-    this.scene.add.existing(this.attackArea);
+    this.levelscene.physics.add.existing(this.attackArea);
     this.attackArea
       .setVisible(false)
       .setDepth(StandardDepths.ATTACKAREA)
       .setStrokeStyle(2, 0x333333, 0.3);
+    if (this.attackArea.body instanceof Phaser.Physics.Arcade.Body) {
+      this.attackArea.body.setCircle(this.range);
+    }
+
+    this.firingTimerConfig = {
+      delay: this.rateOfFire,
+      loop: true,
+      callback: this.fire,
+      callbackScope: this,
+      startAt: this.rateOfFire - 500,
+    };
+    this.firingTimer = this.levelscene.time.addEvent(this.firingTimerConfig);
+    this.firingTimer.paused = true;
+
     this.setScale(config.towerScale);
 
     // TODO: move tower input here
@@ -111,7 +133,11 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
         // );
       }
     });
-    this.scene.towerManager.towerSourceGroup.add(this);
+    this.levelscene.towerManager.towerSourceGroup.add(this);
+  }
+
+  update() {
+    this.findTarget();
   }
 
   setDragAlpha(a: number = 0.8) {
@@ -151,32 +177,25 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   }
 
   dropTower() {
-    this.scene.towerManager.moveTowerToDroppedGroup(this);
-    if (this.scene.debugSettings.log) {
-      const success = this.scene.towerManager.towerPlacedGroup.contains(this);
+    this.levelscene.towerManager.moveTowerToDroppedGroup(this);
+    if (this.levelscene.debugSettings.log) {
+      const success =
+        this.levelscene.towerManager.towerPlacedGroup.contains(this);
       console.log(
         `placing tower: ${this.name} using bullets: ${this.bulletClass.name}. Now in Place Group: ${success}`
       );
     }
-    this.scene.towerManager.unfreezeSourceTowers();
+    this.levelscene.towerManager.unfreezeSourceTowers();
     this.correctButton?.destroy();
     this.trashButton?.destroy();
     this.setAlpha(1);
     this.base.setAlpha(1);
     this.disableInteractive();
     this.attackArea.setVisible(false);
-    this.firingTimer = this.scene.time.addEvent({
-      delay: this.rateOfFire,
-      loop: true,
-      callback: this.fire,
-      callbackScope: this,
-    });
-    console.log(this.firingTimer.delay);
+    this.firingTimer.paused = false;
   }
 
   dragTower(x: number, y: number) {
-    // this.trashButton.setVisible(false);
-    // this.correctButton.setVisible(false);
     this.x = x;
     this.y = y;
     this.base.x = x;
@@ -188,7 +207,7 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
   createButtons() {
     if (this.trashButton === undefined) {
       this.trashButton = new Phaser.GameObjects.Image(
-        this.scene,
+        this.levelscene,
         this.x - 40,
         this.y,
         'trashbin'
@@ -198,15 +217,15 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
         .setVisible(false)
         .setDepth(StandardDepths.BUTTONS);
       this.trashButton.on('pointerup', () => {
-        this.scene.towerManager.unfreezeSourceTowers();
+        this.levelscene.towerManager.unfreezeSourceTowers();
         Tower.destroyTower(this);
       });
-      this.scene.add.existing(this.trashButton);
+      this.levelscene.add.existing(this.trashButton);
     }
 
     if (this.correctButton === undefined) {
       this.correctButton = new Phaser.GameObjects.Image(
-        this.scene,
+        this.levelscene,
         this.x + 40,
         this.y,
         'correct'
@@ -217,7 +236,7 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
         .setDepth(StandardDepths.BUTTONS)
         .setInteractive();
       this.correctButton.on('pointerup', () => this.dropTower());
-      this.scene.add.existing(this.correctButton);
+      this.levelscene.add.existing(this.correctButton);
     }
   }
 
@@ -229,46 +248,79 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     tower.destroy();
   }
 
+  collectTargetableGroup() {
+    const enemies = this.levelscene.visibleEnemies.getChildren() as Enemy[];
+    const enemiesInRange = enemies.filter(
+      (enemy) =>
+        Phaser.Math.Distance.Between(this.x, this.y, enemy.x, enemy.y) <
+        this.range
+    );
+    if (enemiesInRange.length < 1) {
+      this.firingTimer.paused = true;
+    } else {
+      this.firingTimer.paused = false;
+    }
+
+    this.#targetable = enemiesInRange;
+  }
+
   findTarget() {
-    const method = this.targeting;
-    console.log(`looking for ${method} enemy`);
-    let allEnemies: Enemy[] = [];
-    const keys: string[] = Object.keys(this.scene.enemies);
-    console.log(`keys: ${keys}`);
-    keys.forEach((key: string) => {
-      const keyEnemies = this.scene.enemies[key].getChildren();
-      console.log(keyEnemies);
-      allEnemies = [
-        ...allEnemies,
-        ...(this.scene.enemies[key].getMatching('visible', true) as Enemy[]),
-      ];
-    });
-    const getFirst = (a: Enemy, b: Enemy) =>
-      a.pathCovered! > b.pathCovered! ? a : b;
-    const target: Enemy | undefined =
-      allEnemies.length > 0 ? allEnemies.reduce(getFirst) : undefined;
-    return target;
+    this.collectTargetableGroup();
+    if (
+      this.#targetable.length > 0 &&
+      (this.targeting === TargetingMethods.GetClosest ||
+        this.targeting === TargetingMethods.GetFurthest)
+    ) {
+      this.#targetable.forEach((e) => {
+        const enemy = e as Enemy;
+        enemy.distanceToTower = Phaser.Math.Distance.Between(
+          this.x,
+          this.y,
+          enemy.x,
+          enemy.y
+        );
+      });
+    }
+    const newTarget: Enemy | undefined =
+      this.#targetable.length > 0
+        ? this.#targetable.reduce(this.targeting)
+        : undefined;
+    // console.log(
+    //   `${this.name} found ${this.targeting.name} enemy: ${newTarget?.constructor.name}`
+    // );
+    this.#target = newTarget;
+    this.turnTowardsTarget();
+  }
+
+  turnTowardsTarget() {
+    if (this.#target !== undefined) {
+      this.rotation = Phaser.Math.Angle.Between(
+        this.x,
+        this.y,
+        this.#target.x,
+        this.#target.y
+      );
+    }
   }
 
   createBullet() {
     // eslint-disable-next-line new-cap
-    const bullet = new this.bulletClass(this.scene, this.x, this.y);
-    this.scene.physics.add.existing(bullet);
+    const bullet = new this.bulletClass(this.levelscene, this.x, this.y);
+    this.levelscene.physics.add.existing(bullet);
+    this.levelscene.bulletGroup?.add(bullet);
     return bullet;
   }
 
   fire() {
-    // eslint-disable-next-line new-cap
-    console.log(`prepping bullet and target`);
-    const bullet = this.createBullet();
-    const target = this.findTarget();
-    if (bullet !== undefined && target !== undefined) {
-      const angle = this.scene.physics.moveToObject(
+    if (this.#target !== undefined) {
+      const bullet = this.createBullet();
+      const angle = this.levelscene.physics.moveToObject(
         bullet,
-        target,
+        this.#target,
         bullet.speed
       );
       bullet.setRotation(angle);
+      this.setRotation(angle);
     }
   }
 }

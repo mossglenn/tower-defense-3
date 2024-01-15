@@ -1,14 +1,14 @@
 /* eslint-disable max-classes-per-file */
-import Phaser from 'phaser';
 import Enemy from './Enemy.ts';
+import type LevelScene from '../scenes/LevelScene.ts';
 
 export class Ghost extends Enemy {
   startingHp: number = 200;
 
   speed: number = 10;
 
-  constructor(scene: Phaser.Scene, texture = 'ghost') {
-    super(scene, texture);
+  constructor(levelscene: LevelScene, texture = 'ghost') {
+    super(levelscene, texture);
   }
 }
 
@@ -17,8 +17,8 @@ export class Scorpion extends Enemy {
 
   speed: number = 10;
 
-  constructor(scene: Phaser.Scene, texture = 'scorpion') {
-    super(scene, texture);
+  constructor(levelscene: LevelScene, texture = 'scorpion') {
+    super(levelscene, texture);
   }
 }
 
@@ -27,7 +27,7 @@ export class Eye extends Enemy {
 
   speed: number = 15;
 
-  constructor(scene: Phaser.Scene, texture = 'eye') {
-    super(scene, texture);
+  constructor(levelscene: LevelScene, texture = 'eye') {
+    super(levelscene, texture);
   }
 }
