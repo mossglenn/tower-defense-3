@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { Enemies } from './CustomTypes.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
 
 export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
@@ -21,7 +20,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   distanceToTower: number = 1000000;
 
-  constructor(scene: LevelScene, texture: string = Enemies.ENEMY) {
+  constructor(scene: LevelScene, texture: string = 'enemy') {
     super(scene, -100, -100, texture);
     this.levelscene = scene;
     this.hp = this.startingHp;

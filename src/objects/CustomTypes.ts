@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type EnemyGroup from './EnemyGroup.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
 import { BulletTypes } from './BulletRanks.ts';
+import { EnemyTypes } from './EnemyRanks.ts';
 
 export type PathInfo = { name: string; points: Phaser.Math.Vector2[] };
 
@@ -15,15 +16,6 @@ export type TimelineConfigPlus = Phaser.Types.Time.TimelineEventConfig & {
   type: string;
   path: string;
 };
-
-export const Enemies = {
-  ENEMY: 'enemy',
-  GHOST: 'ghost',
-  SCORPION: 'scorpion',
-  EYE: 'eye',
-} as const;
-
-export type EnemyTypes = (typeof Enemies)[keyof typeof Enemies];
 
 export type SpawningTimelineData = {
   at: number;

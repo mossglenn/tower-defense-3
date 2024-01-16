@@ -1,5 +1,5 @@
 import LevelScene from './LevelScene.ts';
-import { SpawningTimelineData, Enemies } from '../objects/CustomTypes.ts';
+import { SpawningTimelineData } from '../objects/CustomTypes.ts';
 
 export default class Level001 extends LevelScene {
   tileAssets = {
@@ -14,17 +14,17 @@ export default class Level001 extends LevelScene {
   spawningTimelineData: SpawningTimelineData = [
     {
       at: 1000,
-      enemy: Enemies.GHOST,
+      enemy: 'GHOST',
       path: 'pathOne',
     },
     {
       at: 5000,
-      enemy: Enemies.SCORPION,
+      enemy: 'SCORPION',
       path: 'pathTwo',
     },
     {
       at: 9000,
-      enemy: Enemies.EYE,
+      enemy: 'EYE',
       path: 'pathOne',
     },
   ];
@@ -34,20 +34,6 @@ export default class Level001 extends LevelScene {
   }
 
   create(): void {
-    // this.map = this.make.tilemap({ key: 'tilemap' });
-    // const tileset = this.map.addTilesetImage('towerDefense_tilesheet', 'tiles');
-    // if (tileset !== null) {
-    //   this.gameMapLayers.background = this.map
-    //     .createLayer('background', tileset)
-    //     ?.setVisible(true);
-    //   this.gameMapLayers.sidebar = this.map
-    //     .createLayer('sidebar', tileset)
-    //     ?.setDepth(77);
-    //   this.gameMapLayers.terrain = this.map
-    //     .createLayer('terrain', tileset)
-    //     ?.setCollisionCategory(CollisionCategories.TERRAIN);
-    // }
-
     super.create();
   }
 }

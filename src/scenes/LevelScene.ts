@@ -1,15 +1,11 @@
 import Phaser from 'phaser';
 import {
   CollisionCategories,
-  Enemies,
-  EnemyGroups,
-  EnemyTypes,
   GameMapLayers,
   SpawningTimelineData,
   StandardDepths,
+  EnemyGroups,
 } from '../objects/CustomTypes.ts';
-import EnemyGroup from '../objects/EnemyGroup.ts';
-import { Eye, Ghost, Scorpion } from '../objects/EnemyRanks.ts';
 import type Tower from '../objects/Tower.ts';
 import PathManager from '../objects/PathManager.ts';
 import SpawnManager from '../objects/SpawnManager.ts';
@@ -17,8 +13,11 @@ import GameSettings from '../GameSettings.ts';
 import TowerManager from '../objects/TowerManager.ts';
 import Bullet from '../objects/Bullet.ts';
 import Enemy from '../objects/Enemy.ts';
+import EnemyGroup from '../objects/EnemyGroup.ts';
+import { enemyGroupsConfig, EnemyTypes } from '../objects/EnemyRanks.ts';
 
 export default class LevelScene extends Phaser.Scene {
+  // level-specific assets
   tileAssets!: {
     json: string;
     png: string;
@@ -26,8 +25,11 @@ export default class LevelScene extends Phaser.Scene {
     pathMarkerSize: number;
   };
 
+  spawningTimelineData!: SpawningTimelineData;
+
   levelTowers!: string[];
 
+  // map and layers
   map?: Phaser.Tilemaps.Tilemap;
 
   gameMapLayers: GameMapLayers = {
@@ -38,7 +40,9 @@ export default class LevelScene extends Phaser.Scene {
     sidebar: null,
   };
 
-  spawningTimelineData!: SpawningTimelineData;
+  pathManager = new PathManager();
+
+  // spawning enemies
 
   spawnManager = new SpawnManager();
 
@@ -46,15 +50,19 @@ export default class LevelScene extends Phaser.Scene {
 
   visibleEnemies = new Phaser.GameObjects.Group(this);
 
-  bulletGroup?: Phaser.Physics.Arcade.Group;
+  // towers
 
   towerManager!: TowerManager;
 
-  pathManager = new PathManager();
+  bulletGroup?: Phaser.Physics.Arcade.Group;
 
-  graphics?: Phaser.GameObjects.Graphics;
+  // interface
 
   playbutton?: Phaser.GameObjects.Image;
+
+  // debugging
+
+  graphics?: Phaser.GameObjects.Graphics;
 
   debugSettings = {
     draw: {
@@ -117,12 +125,10 @@ export default class LevelScene extends Phaser.Scene {
           )
           .filter((l) => l != null) as Phaser.Tilemaps.ObjectLayer[] // nulls are removed so forcing type is safe
       );
-
       const pathNameErrors = SpawnManager.checkDataNames(
         this.pathManager.pathNames,
         this.spawningTimelineData
       );
-
       if (pathNameErrors !== undefined) {
         pathNameErrors.forEach((error) => console.error(error));
       }
@@ -137,28 +143,27 @@ export default class LevelScene extends Phaser.Scene {
         path.curves.forEach((curve: any) => {
           pathPoints.push(curve.p0, curve.p1);
         });
-
         console.log(pathPoints);
       });
     }
 
     // 🧩 Creating all enemy groups
     // TODO: think about moving creation of enemy group into spawnmanager or into gamesettings
-    this.enemies.ghost = new EnemyGroup(this.physics.world, this, {
-      classType: Ghost,
-      name: Enemies.GHOST,
-      defaultKey: Enemies.GHOST,
-    });
-    this.enemies.scorpion = new EnemyGroup(this.physics.world, this, {
-      classType: Scorpion,
-      name: Enemies.SCORPION,
-      defaultKey: Enemies.SCORPION,
-    });
-    this.enemies.eye = new EnemyGroup(this.physics.world, this, {
-      classType: Eye,
-      name: Enemies.EYE,
-      defaultKey: Enemies.EYE,
-    });
+    this.enemies.GHOST = new EnemyGroup(
+      this.physics.world,
+      this,
+      enemyGroupsConfig.GHOST
+    );
+    this.enemies.SCORPION = new EnemyGroup(
+      this.physics.world,
+      this,
+      enemyGroupsConfig.SCORPION
+    );
+    this.enemies.EYE = new EnemyGroup(
+      this.physics.world,
+      this,
+      enemyGroupsConfig.EYE
+    );
     Object.keys(this.enemies).forEach((enemy) =>
       this.add.existing(this.enemies[enemy])
     );

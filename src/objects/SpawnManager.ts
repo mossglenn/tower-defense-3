@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import { SpawningTimelineData, EnemyTypes } from './CustomTypes.ts';
+import { SpawningTimelineData } from './CustomTypes.ts';
 import type LevelScene from '../scenes/LevelScene.ts';
+import { EnemyTypes } from './EnemyRanks.ts';
 
 export default class SpawnManager {
   data?: SpawningTimelineData;
