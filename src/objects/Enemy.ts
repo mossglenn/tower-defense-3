@@ -58,7 +58,7 @@ export default abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   damage(points: number) {
-    console.log(`hit enemy for ${points} damage`);
+    this.setDebugBodyColor(0xffff00);
     this.hp -= points;
     if (this.hp <= 0) {
       this.levelscene.visibleEnemies.remove(this);

@@ -307,7 +307,7 @@ export default abstract class Tower extends Phaser.Physics.Arcade.Sprite {
     // eslint-disable-next-line new-cap
     const bullet = new this.bulletClass(this.levelscene, this.x, this.y);
     this.levelscene.physics.add.existing(bullet);
-    this.levelscene.bulletGroup?.add(bullet);
+    this.levelscene.bulletGroup.add(bullet);
     return bullet;
   }
 

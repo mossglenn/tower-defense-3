@@ -12,6 +12,7 @@ export const TargetingMethods = {
 
   GetClosest: (a: Enemy, b: Enemy): Enemy =>
     a.distanceToTower < b.distanceToTower ? a : b,
+  // this.physics.closest?
 
   GetFurthest: (a: Enemy, b: Enemy): Enemy =>
     a.distanceToTower > b.distanceToTower ? a : b,

@@ -33,14 +33,17 @@ export default class LevelScene extends Phaser.Scene {
   map?: Phaser.Tilemaps.Tilemap;
 
   gameMapLayers: GameMapLayers = {
-    background: null,
-    terrain: null,
-    towers: null,
-    obstacles: null,
-    sidebar: null,
+    background: undefined,
+    terrain: undefined,
+    towers: undefined,
+    obstacles: undefined,
+    sidebar: undefined,
+    colliders: undefined,
   };
 
   pathManager = new PathManager();
+
+  colliderGroup?: Phaser.Physics.Arcade.Group;
 
   // spawning enemies
 
@@ -54,7 +57,8 @@ export default class LevelScene extends Phaser.Scene {
 
   towerManager!: TowerManager;
 
-  bulletGroup?: Phaser.Physics.Arcade.Group;
+  bulletGroup: Phaser.GameObjects.Group | Phaser.Physics.Arcade.Group =
+    new Phaser.GameObjects.Group(this);
 
   // interface
 
@@ -85,6 +89,8 @@ export default class LevelScene extends Phaser.Scene {
 
   create() {
     this.towerManager = new TowerManager(this.physics.world, this);
+    this.bulletGroup = this.physics.add.group();
+    this.colliderGroup = this.physics.add.group();
 
     this.graphics = this.add.graphics();
 
@@ -111,7 +117,28 @@ export default class LevelScene extends Phaser.Scene {
       this.gameMapLayers.obstacles = this.map
         .createLayer('obstacles', tileset)
         ?.setDepth(StandardDepths.OBSTACLES);
-      // TODO: Add collision layer to map
+
+      // 🧩 set up collider layer
+      const colliderObjects = this.map.createFromObjects('colliders', [
+        {
+          gid: 131,
+          key: 'collider131',
+        },
+        { gid: 132, key: 'collider132' },
+      ]);
+      colliderObjects.forEach((collider) => {
+        this.colliderGroup!.add(collider, true);
+        const sprite = collider as Phaser.Physics.Arcade.Sprite;
+        if (sprite.texture.key === 'collider131') {
+          sprite.body!.setCircle(32);
+        } else if (sprite.texture.key === 'collider132') {
+          sprite.body!.setCircle(16, 16, 16);
+        }
+      });
+      // TODO: make bullets destroy when overlap collider
+      this.physics.add.overlap(this.bulletGroup, this.colliderGroup, (bullet) =>
+        bullet.destroy()
+      );
     }
 
     // 🧩 set up paths
@@ -169,10 +196,8 @@ export default class LevelScene extends Phaser.Scene {
     );
 
     // bullet collider
-    this.bulletGroup = this.physics.add.group();
 
     this.physics.add.overlap(this.bulletGroup, this.visibleEnemies, (e, b) => {
-      console.log(`hit`);
       const bullet = b as Bullet;
       const enemy = e as Enemy;
       enemy.damage(bullet.damage);

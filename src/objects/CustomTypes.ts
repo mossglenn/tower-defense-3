@@ -54,6 +54,7 @@ export type GameMapLayers = {
   towers: Phaser.Tilemaps.TilemapLayer | null | undefined;
   sidebar: Phaser.Tilemaps.TilemapLayer | null | undefined;
   obstacles: Phaser.Tilemaps.TilemapLayer | null | undefined;
+  colliders: Phaser.Tilemaps.TilemapLayer | null | undefined;
 };
 
 export type TowerConfig = {
